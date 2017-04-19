@@ -15,15 +15,13 @@ http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/
         <spring:bean id="Bean" name="Bean" class="com.mulesoft.training.Database"/>
     </spring:beans>
     <flow name="mavenFlow">
-        <http:listener config-ref="HTTP_Listener_Configuration" path="/hello" allowedMethods="GET" doc:name="HTTP"/>
         <set-payload value="#[&quot;Hello Maven&quot;]" doc:name="Set Payload"/>
     </flow>
     <flow name="retrieveFlights">
-        <http:listener config-ref="HTTP_Listener_Configuration" path="/flights" allowedMethods="GET" doc:name="HTTP"/>
         <db:select config-ref="Derby_Configuration" doc:name="DatabaseQueryFlights">
             <db:parameterized-query><![CDATA[select * from flights]]></db:parameterized-query>
         </db:select>
-        <object-to-string-transformer doc:name="Object to String"/>
-        <logger message="#[payload]" level="INFO" doc:name="Logger"/>
+        <object-to-string-transformer doc:name="Object to String" encoding="US-ASCII" mimeType="application/json"/>
+        <set-session-variable variableName="flight_info" value="#[payload]" encoding="US-ASCII" mimeType="application/json" doc:name="Session Variable"/>
     </flow>
 </mule>
