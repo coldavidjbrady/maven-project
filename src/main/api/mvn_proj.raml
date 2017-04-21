@@ -15,8 +15,8 @@ traits:
           
                   
 /dbrady/devops:
-                description: "tanker end point sub flows will go here"      
-                /hello:
+                description: "endpoint methods are described below"      
+                /hello/{name}:
                     description: "Receives incoming payloads from OTM and transfers them to JDE"
                     displayName: Redis
                     post:
@@ -24,6 +24,14 @@ traits:
                         application/json:
                           example: | 
                             { "name": "Dave Brady" }
+                      responses:
+                        200:
+                          body:
+                            application/json:
+                              example:  |
+                                { "200": "success" }
+          
+                    get:
                       responses:
                         200:
                           body:
