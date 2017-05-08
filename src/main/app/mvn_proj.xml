@@ -9,7 +9,7 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
     	host="0.0.0.0" port="${port}" doc:name="HTTPS Listener Configuration" 
     	protocol="HTTPS">
     	<tls:context>
-            <tls:key-store path="keystore_mp.jks" keyPassword="maven_proj" password="maven_proj"/>        
+            <tls:key-store path="keystore_mp.jks" keyPassword="maven_proj" password="maven_proj" alias="mule"/>        
         </tls:context> 
     </http:listener-config>
         
