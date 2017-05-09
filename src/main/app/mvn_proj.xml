@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+    <http:listener-config name="mvn_proj-httpListenerConfig" 
+    	host="0.0.0.0" port="${port}" doc:name="HTTPS Listener Configuration" 
+    	protocol="HTTPS">
+    	<tls:context>
+            <tls:key-store path="keystore_mp.jks" keyPassword="maven_proj" password="maven_proj" alias="mule"/>        
+        </tls:context> 
+    </http:listener-config>
+        
+    <apikit:config name="mvn_proj-config" raml="mvn_proj.raml" consoleEnabled="false" doc:name="Router" />
+     
+    <flow name="mvn_proj-main">
+        <http:listener config-ref="mvn_proj-httpListenerConfig" path="/api/*" doc:name="HTTP" />
+        <apikit:router config-ref="mvn_proj-config" doc:name="APIkit Router" />
+        <exception-strategy ref="mvn_proj-apiKitGlobalExceptionMapping" doc:name="Reference Exception Strategy" />
+    </flow>
+    <flow name="mvn_proj-console">
+        <http:listener config-ref="mvn_proj-httpListenerConfig" path="/console/*" doc:name="HTTP" />
+        <apikit:console config-ref="mvn_proj-config" doc:name="APIkit Console" />
+    </flow>
+    <flow name="options:/dbrady/devops/flights:mvn_proj-config">
+        <set-payload value="#[NullPayload.getInstance()]" doc:name="Set Payload" />
+    </flow>
+    <flow name="options:/dbrady/devops/hello:mvn_proj-config">
+        <set-payload value="#[NullPayload.getInstance()]" doc:name="Set Payload" />
+    </flow>
+    <flow name="get:/dbrady/devops/flights:mvn_proj-config">
+        <flow-ref name="retrieveFlights" doc:name="retrieveFlights" />
+        <logger message="#[sessionVars.flight_info.toString()]" level="INFO" doc:name="Logger" />
+        <set-payload value="#[sessionVars.flight_info]" encoding="US-ASCII" mimeType="application/json" doc:name="Set Payload" />
+    </flow>
+    <flow name="post:/dbrady/devops/hello:mvn_proj-config">
+        <flow-ref name="mavenFlow" doc:name="mavenFlow" />
+        <set-payload value="{ &quot;200&quot;: &quot;success&quot; }" doc:name="Set Payload" />
+    </flow>
+    <flow name="options:/dbrady/devops/hello/{name}:mvn_proj-config">
+        <set-payload value="#[NullPayload.getInstance()]" doc:name="Set Payload"/>
+    </flow>
+    <flow name="get:/dbrady/devops/hello/{name}:mvn_proj-config">
+        <set-variable variableName="name" value="#[message.inboundProperties.'http.uri.params'.name]" doc:name="Variable"/>
+        <set-payload value="#[&quot;Hello &quot; + flowVars.name]" doc:name="Set Payload"/>
+    </flow>
+    <flow name="post:/dbrady/devops/hello/{name}:mvn_proj-config">
+        <set-payload value="{ &quot;200&quot;: &quot;success&quot; }" doc:name="Set Payload"/>
+    </flow>
+    <apikit:mapping-exception-strategy name="mvn_proj-apiKitGlobalExceptionMapping">
+        <apikit:mapping statusCode="404">
+            <apikit:exception value="org.mule.module.apikit.exception.NotFoundException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Resource not found&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="405">
+            <apikit:exception value="org.mule.module.apikit.exception.MethodNotAllowedException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Method not allowed&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="415">
+            <apikit:exception value="org.mule.module.apikit.exception.UnsupportedMediaTypeException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Unsupported media type&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="406">
+            <apikit:exception value="org.mule.module.apikit.exception.NotAcceptableException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Not acceptable&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="400">
+            <apikit:exception value="org.mule.module.apikit.exception.BadRequestException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Bad request&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+    </apikit:mapping-exception-strategy>
+</mule>

@@ -1,0 +1,63 @@
+#%RAML 0.8
+title: devops_training
+version: 1.0
+baseUri: http://0.0.0.0:8082/api/
+
+traits:
+  - cors-headers:
+      headers:
+        Access-Control-Allow-Methods:
+          default: "OPTIONS, GET, POST, PUT, HEAD"        
+        Access-Control-Allow-Origin:
+          default: "*"
+        Access-Control-Allow-Headers:
+          default: "Origin, Content-Type, X-Auth-Token"      
+          
+                  
+/dbrady/devops:
+                description: "endpoint methods are described below"      
+                /hello/{name}:
+                    description: "Receives incoming payloads from OTM and transfers them to JDE"
+                    displayName: Redis
+                    post:
+                      body:
+                        application/json:
+                          example: | 
+                            { "name": "Dave Brady" }
+                      responses:
+                        200:
+                          body:
+                            application/json:
+                              example:  |
+                                { "200": "success" }
+          
+                    get:
+                      responses:
+                        200:
+                          body:
+                            application/json:
+                              example:  |
+                                { "200": "success" }
+          
+                    options:
+                      description: |
+                        "this is where the preflight config goes"
+                      is: [cors-headers]     
+
+                /flights:
+                    description: "Receives incoming payloads from OTM and transfers them to JDE"
+                    displayName: Redis
+                    get:
+                      description: |
+                        "just pass in a log id" 
+                      responses:
+                        200:
+                          body:
+                            application/json:                      
+                    options:
+                      description: |
+                        "this is where the preflight config goes"
+                      is: [cors-headers]     
+    
+                
+               
